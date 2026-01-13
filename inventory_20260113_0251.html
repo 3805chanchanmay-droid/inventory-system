@@ -13,8 +13,86 @@
 
         body {
             font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Login Screen */
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .login-container p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        .login-container input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #5568d3;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 15px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        /* Main App */
+        .app-container {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
             background: #f0f2f5;
             padding: 20px;
+        }
+
+        .app-container.active {
+            display: block;
         }
 
         .container {
@@ -27,19 +105,42 @@
             color: white;
             padding: 30px;
             border-radius: 10px;
-            text-align: center;
             margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        .header h1 {
+        .header-left h1 {
             margin: 0;
             font-size: 32px;
         }
 
-        .header p {
-            margin-top: 10px;
-            font-size: 16px;
+        .header-left p {
+            margin-top: 5px;
+            font-size: 14px;
             opacity: 0.9;
+        }
+
+        .user-info {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
         }
 
         .upload-section {
@@ -215,84 +316,119 @@
             color: #999;
         }
 
-        .empty-message h3 {
-            margin-bottom: 10px;
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .logout-btn {
+                margin-top: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🏭 Warehouse Inventory System</h1>
-            <p>Home Appliances - Real-time Stock Management</p>
-        </div>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <h1>🔐 Secure Login</h1>
+        <p>Warehouse Inventory Access</p>
+        
+        <input 
+            type="text" 
+            id="username" 
+            placeholder="Username" 
+            autocomplete="off"
+        >
+        <input 
+            type="password" 
+            id="password" 
+            placeholder="Password"
+        >
+        <button class="login-btn" onclick="login()">Login</button>
+        
+        <div class="error-message" id="errorMessage"></div>
+    </div>
 
-        <!-- File Upload Section -->
-        <div class="upload-section">
-            <h2>📁 Upload Your Excel Inventory File</h2>
-            <label for="fileInput" class="upload-btn">
-                Choose Excel File
-            </label>
-            <input type="file" id="fileInput" accept=".xlsx,.xls">
-            <p style="color: #666; margin-top: 10px;">Supported formats: .xlsx, .xls</p>
-        </div>
-
-        <!-- Statistics Dashboard -->
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="totalProducts">0</div>
-                <div class="stat-label">Total Products</div>
+    <!-- Main Application -->
+    <div class="app-container" id="appContainer">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h1>🏭 Warehouse Inventory System</h1>
+                    <p>Home Appliances - Real-time Stock Management</p>
+                    <div class="user-info">Logged in as: <strong id="currentUser"></strong></div>
+                </div>
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
             </div>
-            <div class="stat-card">
-                <div class="stat-number" id="lowStock">0</div>
-                <div class="stat-label">Low Stock Items</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="outOfStock">0</div>
-                <div class="stat-label">Out of Stock</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalValue">$0</div>
-                <div class="stat-label">Total Stock Value</div>
-            </div>
-        </div>
 
-        <!-- Action Buttons -->
-        <div class="buttons">
-            <button class="btn btn-success" onclick="exportToExcel()">📊 Export to Excel</button>
-            <button class="btn btn-primary" onclick="addOrder()">➕ Add Order</button>
-            <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
-        </div>
+            <!-- File Upload Section -->
+            <div class="upload-section">
+                <h2>📁 Upload Your Excel Inventory File</h2>
+                <label for="fileInput" class="upload-btn">
+                    Choose Excel File
+                </label>
+                <input type="file" id="fileInput" accept=".xlsx,.xls">
+                <p style="color: #666; margin-top: 10px;">Supported formats: .xlsx, .xls</p>
+            </div>
 
-        <!-- Search Box -->
-        <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search by SKU, product name, category..." onkeyup="filterTable()">
+            <!-- Statistics Dashboard -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalProducts">0</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="lowStock">0</div>
+                    <div class="stat-label">Low Stock Items</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="outOfStock">0</div>
+                    <div class="stat-label">Out of Stock</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalValue">$0</div>
+                    <div class="stat-label">Total Stock Value</div>
+                </div>
+            </div>
 
-        <!-- Inventory Table -->
-        <div class="table-container">
-            <table id="inventoryTable">
-                <thead>
-                    <tr>
-                        <th>SKU</th>
-                        <th>Product Name</th>
-                        <th>Category</th>
-                        <th>Current Stock</th>
-                        <th>Reorder Point</th>
-                        <th>Unit Cost</th>
-                        <th>Stock Value</th>
-                        <th>Supplier</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="inventoryBody">
-                    <tr>
-                        <td colspan="9" class="empty-message">
-                            <h3>📦 No Inventory Data Loaded</h3>
-                            <p>Please upload your Excel file to get started</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <!-- Action Buttons -->
+            <div class="buttons">
+                <button class="btn btn-success" onclick="exportToExcel()">📊 Export to Excel</button>
+                <button class="btn btn-primary" onclick="addOrder()">➕ Add Order</button>
+                <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
+            </div>
+
+            <!-- Search Box -->
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search by SKU, product name, category..." onkeyup="filterTable()">
+
+            <!-- Inventory Table -->
+            <div class="table-container">
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Current Stock</th>
+                            <th>Reorder Point</th>
+                            <th>Unit Cost</th>
+                            <th>Stock Value</th>
+                            <th>Supplier</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody">
+                        <tr>
+                            <td colspan="9" class="empty-message">
+                                <h3>📦 No Inventory Data Loaded</h3>
+                                <p>Please upload your Excel file to get started</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -300,8 +436,101 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
-        // Store inventory data
+        // ============ LOGIN SYSTEM ============
+        
+        // IMPORTANT: Store credentials securely
+        const VALID_USERNAME = 'admin';
+        const VALID_PASSWORD = 'admin702470';
+        
+        let currentUser = '';
         let inventoryData = [];
+
+        // Check if already logged in (session)
+        window.onload = function() {
+            const savedUser = sessionStorage.getItem('loggedInUser');
+            if (savedUser) {
+                currentUser = savedUser;
+                showApp();
+            }
+        };
+
+        // Login function
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMessage');
+
+            if (!username || !password) {
+                errorMsg.textContent = '❌ Please enter both username and password';
+                return;
+            }
+
+            // Validate credentials
+            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+                currentUser = username;
+                sessionStorage.setItem('loggedInUser', username);
+                showApp();
+                errorMsg.textContent = '';
+                
+                // Clear password field
+                document.getElementById('password').value = '';
+            } else {
+                errorMsg.textContent = '❌ Invalid username or password';
+                document.getElementById('password').value = '';
+                
+                // Security: Add delay after failed login
+                document.querySelector('.login-btn').disabled = true;
+                setTimeout(() => {
+                    document.querySelector('.login-btn').disabled = false;
+                }, 1000);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                sessionStorage.removeItem('loggedInUser');
+                currentUser = '';
+                inventoryData = [];
+                document.getElementById('loginScreen').style.display = 'block';
+                document.getElementById('appContainer').classList.remove('active');
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            }
+        }
+
+        // Show main application
+        function showApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContainer').classList.add('active');
+            document.getElementById('currentUser').textContent = currentUser;
+        }
+
+        // Allow Enter key to login
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') {
+                login();
+            }
+        });
+
+        // Auto-logout after inactivity (30 minutes)
+        let inactivityTimer;
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                if (currentUser) {
+                    alert('Session expired due to inactivity. Please login again.');
+                    logout();
+                }
+            }, 30 * 60 * 1000); // 30 minutes
+        }
+
+        // Reset timer on user activity
+        document.addEventListener('mousemove', resetInactivityTimer);
+        document.addEventListener('keypress', resetInactivityTimer);
+        document.addEventListener('click', resetInactivityTimer);
+
+        // ============ INVENTORY SYSTEM ============
 
         // File upload handler
         document.getElementById('fileInput').addEventListener('change', function(e) {
@@ -316,18 +545,12 @@
             
             reader.onload = function(e) {
                 try {
-                    // Parse Excel file
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    // Get first sheet
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    
-                    // Convert to JSON
                     const jsonData = XLSX.utils.sheet_to_json(worksheet);
                     
-                    // Store and display data
                     inventoryData = jsonData;
                     displayInventory(jsonData);
                     updateStatistics(jsonData);
@@ -343,7 +566,6 @@
             reader.readAsArrayBuffer(file);
         });
 
-        // Display inventory in table
         function displayInventory(data) {
             const tbody = document.getElementById('inventoryBody');
             tbody.innerHTML = '';
@@ -356,7 +578,6 @@
             data.forEach(product => {
                 const row = document.createElement('tr');
                 
-                // Get values (handle different Excel column name formats)
                 const sku = product.SKU || product.sku || 'N/A';
                 const name = product['Product Name'] || product.ProductName || product.name || 'N/A';
                 const category = product.Category || product.category || 'N/A';
@@ -365,10 +586,8 @@
                 const cost = product['Unit Cost'] || product.UnitCost || product.cost || 0;
                 const supplier = product.Supplier || product.supplier || 'N/A';
                 
-                // Calculate stock value
                 const stockValue = (stock * cost).toFixed(2);
                 
-                // Determine status
                 let status = 'OK';
                 let statusClass = 'status-ok';
                 
@@ -396,7 +615,6 @@
             });
         }
 
-        // Update statistics
         function updateStatistics(data) {
             const total = data.length;
             
@@ -423,7 +641,6 @@
             document.getElementById('totalValue').textContent = '$' + totalValue.toFixed(2);
         }
 
-        // Search/filter table
         function filterTable() {
             const searchText = document.getElementById('searchBox').value.toLowerCase();
             const rows = document.querySelectorAll('#inventoryBody tr');
@@ -438,7 +655,6 @@
             });
         }
 
-        // Refresh data
         function refreshData() {
             if (inventoryData.length > 0) {
                 displayInventory(inventoryData);
@@ -449,7 +665,6 @@
             }
         }
 
-        // Export to Excel
         function exportToExcel() {
             if (inventoryData.length === 0) {
                 alert('⚠️ No data to export. Please upload a file first.');
@@ -466,7 +681,6 @@
             alert('✅ Excel file exported successfully!');
         }
 
-        // Add order (deduct stock)
         function addOrder() {
             if (inventoryData.length === 0) {
                 alert('⚠️ Please upload inventory first.');
@@ -482,7 +696,6 @@
                 return;
             }
 
-            // Find product
             const product = inventoryData.find(p => 
                 (p.SKU || p.sku) === sku
             );
@@ -492,7 +705,6 @@
                 return;
             }
 
-            // Get current stock
             let currentStock = product['Current Stock'] || product.CurrentStock || product.stock || 0;
 
             if (currentStock < quantity) {
@@ -500,7 +712,6 @@
                 return;
             }
 
-            // Deduct stock
             if (product['Current Stock'] !== undefined) {
                 product['Current Stock'] -= quantity;
             } else if (product.CurrentStock !== undefined) {
@@ -509,7 +720,6 @@
                 product.stock -= quantity;
             }
 
-            // Refresh display
             displayInventory(inventoryData);
             updateStatistics(inventoryData);
 
