@@ -96,7 +96,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
@@ -262,6 +262,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 1000px;
         }
 
         th {
@@ -272,6 +273,7 @@
             font-weight: 600;
             position: sticky;
             top: 0;
+            white-space: nowrap;
         }
 
         td {
@@ -283,37 +285,14 @@
             background: #f8f9ff;
         }
 
-        .status-ok {
-            background: #d4edda;
-            color: #155724;
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .status-low {
-            background: #fff3cd;
-            color: #856404;
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .status-out {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
         .empty-message {
             text-align: center;
             padding: 60px 20px;
             color: #999;
+        }
+
+        .row-highlight {
+            background: #fff9e6 !important;
         }
 
         @media (max-width: 768px) {
@@ -324,6 +303,14 @@
             
             .logout-btn {
                 margin-top: 15px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px 10px;
             }
         }
     </style>
@@ -357,7 +344,7 @@
             <div class="header">
                 <div class="header-left">
                     <h1>🏭 Warehouse Inventory System</h1>
-                    <p>Home Appliances - Real-time Stock Management</p>
+                    <p>Real-time Stock Management</p>
                     <div class="user-info">Logged in as: <strong id="currentUser"></strong></div>
                 </div>
                 <button class="logout-btn" onclick="logout()">🚪 Logout</button>
@@ -376,52 +363,50 @@
             <!-- Statistics Dashboard -->
             <div class="stats">
                 <div class="stat-card">
-                    <div class="stat-number" id="totalProducts">0</div>
-                    <div class="stat-label">Total Products</div>
+                    <div class="stat-number" id="totalItems">0</div>
+                    <div class="stat-label">Total Items</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="lowStock">0</div>
-                    <div class="stat-label">Low Stock Items</div>
+                    <div class="stat-number" id="totalPcs">0</div>
+                    <div class="stat-label">Total Pieces</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="outOfStock">0</div>
-                    <div class="stat-label">Out of Stock</div>
+                    <div class="stat-number" id="uniqueProjects">0</div>
+                    <div class="stat-label">Projects</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="totalValue">$0</div>
-                    <div class="stat-label">Total Stock Value</div>
+                    <div class="stat-number" id="uniqueSKUs">0</div>
+                    <div class="stat-label">Unique SKUs</div>
                 </div>
             </div>
 
             <!-- Action Buttons -->
             <div class="buttons">
                 <button class="btn btn-success" onclick="exportToExcel()">📊 Export to Excel</button>
-                <button class="btn btn-primary" onclick="addOrder()">➕ Add Order</button>
+                <button class="btn btn-primary" onclick="updateQuantity()">✏️ Update Quantity</button>
                 <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
             </div>
 
             <!-- Search Box -->
-            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search by SKU, product name, category..." onkeyup="filterTable()">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search by Item No, SKU, Description, Project..." onkeyup="filterTable()">
 
             <!-- Inventory Table -->
             <div class="table-container">
                 <table id="inventoryTable">
                     <thead>
                         <tr>
+                            <th>Item No.</th>
+                            <th>Item No. Remark</th>
                             <th>SKU</th>
-                            <th>Product Name</th>
-                            <th>Category</th>
-                            <th>Current Stock</th>
-                            <th>Reorder Point</th>
-                            <th>Unit Cost</th>
-                            <th>Stock Value</th>
-                            <th>Supplier</th>
-                            <th>Status</th>
+                            <th>Description</th>
+                            <th>Project</th>
+                            <th>Pcs</th>
+                            <th>Remark1</th>
                         </tr>
                     </thead>
                     <tbody id="inventoryBody">
                         <tr>
-                            <td colspan="9" class="empty-message">
+                            <td colspan="7" class="empty-message">
                                 <h3>📦 No Inventory Data Loaded</h3>
                                 <p>Please upload your Excel file to get started</p>
                             </td>
@@ -438,14 +423,13 @@
     <script>
         // ============ LOGIN SYSTEM ============
         
-        // IMPORTANT: Store credentials securely
         const VALID_USERNAME = 'admin';
         const VALID_PASSWORD = 'admin702470';
         
         let currentUser = '';
         let inventoryData = [];
 
-        // Check if already logged in (session)
+        // Check if already logged in
         window.onload = function() {
             const savedUser = sessionStorage.getItem('loggedInUser');
             if (savedUser) {
@@ -465,20 +449,16 @@
                 return;
             }
 
-            // Validate credentials
             if (username === VALID_USERNAME && password === VALID_PASSWORD) {
                 currentUser = username;
                 sessionStorage.setItem('loggedInUser', username);
                 showApp();
                 errorMsg.textContent = '';
-                
-                // Clear password field
                 document.getElementById('password').value = '';
             } else {
                 errorMsg.textContent = '❌ Invalid username or password';
                 document.getElementById('password').value = '';
                 
-                // Security: Add delay after failed login
                 document.querySelector('.login-btn').disabled = true;
                 setTimeout(() => {
                     document.querySelector('.login-btn').disabled = false;
@@ -522,10 +502,9 @@
                     alert('Session expired due to inactivity. Please login again.');
                     logout();
                 }
-            }, 30 * 60 * 1000); // 30 minutes
+            }, 30 * 60 * 1000);
         }
 
-        // Reset timer on user activity
         document.addEventListener('mousemove', resetInactivityTimer);
         document.addEventListener('keypress', resetInactivityTimer);
         document.addEventListener('click', resetInactivityTimer);
@@ -555,7 +534,7 @@
                     displayInventory(jsonData);
                     updateStatistics(jsonData);
                     
-                    alert('✅ Success! Loaded ' + jsonData.length + ' products.');
+                    alert('✅ Success! Loaded ' + jsonData.length + ' items.');
                     
                 } catch (error) {
                     alert('❌ Error reading Excel file. Please make sure it\'s a valid .xlsx or .xls file.');
@@ -566,81 +545,68 @@
             reader.readAsArrayBuffer(file);
         });
 
+        // Display inventory in table
         function displayInventory(data) {
             const tbody = document.getElementById('inventoryBody');
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="empty-message"><h3>No products found</h3></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-message"><h3>No items found</h3></td></tr>';
                 return;
             }
 
-            data.forEach(product => {
+            data.forEach((item, index) => {
                 const row = document.createElement('tr');
                 
-                const sku = product.SKU || product.sku || 'N/A';
-                const name = product['Product Name'] || product.ProductName || product.name || 'N/A';
-                const category = product.Category || product.category || 'N/A';
-                const stock = product['Current Stock'] || product.CurrentStock || product.stock || 0;
-                const reorder = product['Reorder Point'] || product.ReorderPoint || product.reorder || 0;
-                const cost = product['Unit Cost'] || product.UnitCost || product.cost || 0;
-                const supplier = product.Supplier || product.supplier || 'N/A';
-                
-                const stockValue = (stock * cost).toFixed(2);
-                
-                let status = 'OK';
-                let statusClass = 'status-ok';
-                
-                if (stock == 0) {
-                    status = 'OUT OF STOCK';
-                    statusClass = 'status-out';
-                } else if (stock <= reorder) {
-                    status = 'LOW STOCK';
-                    statusClass = 'status-low';
-                }
+                // Get values from Excel (support multiple column name formats)
+                const itemNo = item['Item No.'] || item['Item No'] || item['item no.'] || item['item no'] || 'N/A';
+                const itemNoRemark = item['Item No. Remark'] || item['Item No Remark'] || item['item no. remark'] || item['item no remark'] || '';
+                const sku = item['SKU'] || item['sku'] || item['Sku'] || '';
+                const description = item['Description'] || item['description'] || '';
+                const project = item['Project'] || item['project'] || '';
+                const pcs = item['Pcs'] || item['pcs'] || item['PCS'] || 0;
+                const remark1 = item['Remark1'] || item['remark1'] || item['Remark 1'] || item['remark 1'] || '';
                 
                 row.innerHTML = `
+                    <td>${itemNo}</td>
+                    <td>${itemNoRemark}</td>
                     <td>${sku}</td>
-                    <td>${name}</td>
-                    <td>${category}</td>
-                    <td>${stock}</td>
-                    <td>${reorder}</td>
-                    <td>$${cost}</td>
-                    <td>$${stockValue}</td>
-                    <td>${supplier}</td>
-                    <td><span class="${statusClass}">${status}</span></td>
+                    <td>${description}</td>
+                    <td>${project}</td>
+                    <td>${pcs}</td>
+                    <td>${remark1}</td>
                 `;
                 
                 tbody.appendChild(row);
             });
         }
 
+        // Update statistics
         function updateStatistics(data) {
-            const total = data.length;
+            const totalItems = data.length;
             
-            const low = data.filter(p => {
-                const stock = p['Current Stock'] || p.CurrentStock || p.stock || 0;
-                const reorder = p['Reorder Point'] || p.ReorderPoint || p.reorder || 0;
-                return stock > 0 && stock <= reorder;
-            }).length;
-            
-            const out = data.filter(p => {
-                const stock = p['Current Stock'] || p.CurrentStock || p.stock || 0;
-                return stock == 0;
-            }).length;
-
-            const totalValue = data.reduce((sum, p) => {
-                const stock = p['Current Stock'] || p.CurrentStock || p.stock || 0;
-                const cost = p['Unit Cost'] || p.UnitCost || p.cost || 0;
-                return sum + (stock * cost);
+            const totalPcs = data.reduce((sum, item) => {
+                const pcs = item['Pcs'] || item['pcs'] || item['PCS'] || 0;
+                return sum + parseInt(pcs || 0);
             }, 0);
 
-            document.getElementById('totalProducts').textContent = total;
-            document.getElementById('lowStock').textContent = low;
-            document.getElementById('outOfStock').textContent = out;
-            document.getElementById('totalValue').textContent = '$' + totalValue.toFixed(2);
+            const projects = [...new Set(data.map(item => 
+                item['Project'] || item['project'] || 'N/A'
+            ))];
+            const uniqueProjects = projects.filter(p => p !== 'N/A' && p !== '').length;
+
+            const skus = [...new Set(data.map(item => 
+                item['SKU'] || item['sku'] || item['Sku'] || 'N/A'
+            ))];
+            const uniqueSKUs = skus.filter(s => s !== 'N/A' && s !== '').length;
+
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('totalPcs').textContent = totalPcs;
+            document.getElementById('uniqueProjects').textContent = uniqueProjects;
+            document.getElementById('uniqueSKUs').textContent = uniqueSKUs;
         }
 
+        // Search/filter table
         function filterTable() {
             const searchText = document.getElementById('searchBox').value.toLowerCase();
             const rows = document.querySelectorAll('#inventoryBody tr');
@@ -655,6 +621,7 @@
             });
         }
 
+        // Refresh data
         function refreshData() {
             if (inventoryData.length > 0) {
                 displayInventory(inventoryData);
@@ -665,6 +632,7 @@
             }
         }
 
+        // Export to Excel
         function exportToExcel() {
             if (inventoryData.length === 0) {
                 alert('⚠️ No data to export. Please upload a file first.');
@@ -681,50 +649,50 @@
             alert('✅ Excel file exported successfully!');
         }
 
-        function addOrder() {
+        // Update quantity
+        function updateQuantity() {
             if (inventoryData.length === 0) {
                 alert('⚠️ Please upload inventory first.');
                 return;
             }
 
-            const sku = prompt('Enter Product SKU:');
-            if (!sku) return;
+            const itemNo = prompt('Enter Item No.:');
+            if (!itemNo) return;
 
-            const quantity = parseInt(prompt('Enter Quantity to Deduct:'));
-            if (!quantity || quantity <= 0) {
+            const newQuantity = parseInt(prompt('Enter New Quantity (Pcs):'));
+            if (!newQuantity && newQuantity !== 0) {
                 alert('❌ Invalid quantity!');
                 return;
             }
 
-            const product = inventoryData.find(p => 
-                (p.SKU || p.sku) === sku
+            // Find item
+            const item = inventoryData.find(i => 
+                (i['Item No.'] || i['Item No'] || i['item no.'] || i['item no']) == itemNo
             );
 
-            if (!product) {
-                alert('❌ Product not found! Please check the SKU.');
+            if (!item) {
+                alert('❌ Item not found! Please check the Item No.');
                 return;
             }
 
-            let currentStock = product['Current Stock'] || product.CurrentStock || product.stock || 0;
-
-            if (currentStock < quantity) {
-                alert('❌ Not enough stock!\n\nAvailable: ' + currentStock + '\nRequested: ' + quantity);
-                return;
-            }
-
-            if (product['Current Stock'] !== undefined) {
-                product['Current Stock'] -= quantity;
-            } else if (product.CurrentStock !== undefined) {
-                product.CurrentStock -= quantity;
+            // Update quantity
+            const oldQty = item['Pcs'] || item['pcs'] || item['PCS'] || 0;
+            
+            if (item['Pcs'] !== undefined) {
+                item['Pcs'] = newQuantity;
+            } else if (item['pcs'] !== undefined) {
+                item['pcs'] = newQuantity;
+            } else if (item['PCS'] !== undefined) {
+                item['PCS'] = newQuantity;
             } else {
-                product.stock -= quantity;
+                item['Pcs'] = newQuantity;
             }
 
             displayInventory(inventoryData);
             updateStatistics(inventoryData);
 
-            const productName = product['Product Name'] || product.ProductName || product.name;
-            alert('✅ Order Processed Successfully!\n\nProduct: ' + productName + '\nDeducted: ' + quantity + '\nRemaining Stock: ' + (currentStock - quantity));
+            const description = item['Description'] || item['description'] || 'N/A';
+            alert(`✅ Quantity Updated!\n\nItem: ${description}\nOld Qty: ${oldQty}\nNew Qty: ${newQuantity}`);
         }
     </script>
 </body>
