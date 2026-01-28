@@ -1,94 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warehouse Inventory System</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .login-container {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .login-container h1 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .login-container input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 15px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .error-message {
-            color: red;
-            margin-top: 15px;
-        }
-    </style>
+    <title>Test Page</title>
 </head>
 <body>
-    <div class="login-container">
-        <h1>🔐 Login</h1>
-        <p>Warehouse Inventory System</p>
-        
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button class="login-btn" onclick="login()">Login</button>
-        
-        <div class="error-message" id="errorMessage"></div>
-    </div>
-
-    <script>
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('errorMessage');
-
-            if (username === 'admin' && password === 'admin702470') {
-                alert('✅ Login successful! (Next step will load inventory)');
-                errorMsg.textContent = '';
-            } else {
-                errorMsg.textContent = '❌ Invalid username or password';
-            }
-        }
-
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login();
-            }
-        });
-    </script>
+    <h1>Hello World!</h1>
+    <p>If you can see this, your hosting is working!</p>
 </body>
 </html>
