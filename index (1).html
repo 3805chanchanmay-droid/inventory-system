@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Inventory System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📦 Warehouse Inventory System</h1>
+
+        <!-- Search and Filter Section -->
+        <div class="search-section">
+            <h2>🔍 Search Inventory</h2>
+            <div class="search-controls">
+                <input type="text" id="searchInput" placeholder="Search by Item No., SKU, Location, Description...">
+                <button onclick="searchInventory()">Search</button>
+                <button onclick="clearSearch()">Clear</button>
+                <button onclick="exportToExcel()" class="export-btn">📊 Export to Excel</button>
+            </div>
+            <div class="filter-controls">
+                <label>
+                    <input type="checkbox" id="lowStockFilter" onchange="filterInventory()">
+                    Show Low Stock Only
+                </label>
+            </div>
+        </div>
+
+        <!-- Add/Edit Form -->
+        <div class="form-section">
+            <h2 id="formTitle">➕ Add New Product</h2>
+            <form id="inventoryForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="remark">Remark:</label>
+                        <input type="text" id="remark">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="itochu">ITOCHU:</label>
+                        <input type="text" id="itochu">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="location">Location: *</label>
+                        <input type="text" id="location" placeholder="Current location" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newLocation">New Location:</label>
+                        <input type="text" id="newLocation" placeholder="If moved">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sku">SKU#: *</label>
+                        <input type="text" id="sku" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description: *</label>
+                        <input type="text" id="description" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pcsInStorage">PCS in storage: *</label>
+                        <input type="number" id="pcsInStorage" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="balancePcs">Balance (PCS):</label>
+                        <input type="number" id="balancePcs" min="0">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="lengthCm">L (cm):</label>
+                        <input type="number" id="lengthCm" step="0.1" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="widthCm">W (cm):</label>
+                        <input type="number" id="widthCm" step="0.1" min="0">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="heightCm">H (cm):</label>
+                        <input type="number" id="heightCm" step="0.1" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cbm">CBM:</label>
+                        <input type="number" id="cbm" step="0.001" min="0" readonly>
+                        <small>Auto-calculated from L×W×H</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="actualRec">Actual Rec.:</label>
+                        <input type="text" id="actualRec">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="purpose1">Purpose1:</label>
+                        <input type="text" id="purpose1">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="purpose2">Purpose2:</label>
+                        <input type="text" id="purpose2">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project">Project:</label>
+                        <input type="text" id="project">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="remarkByKerry">Remark by Kerry:</label>
+                        <input type="text" id="remarkByKerry">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="remarkByItochu1">Remark by Itochu1:</label>
+                        <input type="text" id="remarkByItochu1">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="remarkByItochu2">Remark by Itochu2:</label>
+                        <input type="text" id="remarkByItochu2">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" id="submitBtn">Add Product</button>
+                    <button type="button" id="cancelBtn" onclick="cancelEdit()">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick Adjustment Section -->
+        <div class="adjustment-section" id="adjustmentSection" style="display:none;">
+            <h2>⚡ Quick Stock Adjustment</h2>
+            <div class="adjustment-form">
+                <p><strong>Item No:</strong> <span id="adjustItemNo"></span></p>
+                <p><strong>SKU:</strong> <span id="adjustSku"></span></p>
+                <p><strong>Description:</strong> <span id="adjustDesc"></span></p>
+                <p><strong>Location:</strong> <span id="adjustLocation"></span></p>
+                <p><strong>Current Stock:</strong> <span id="adjustCurrentStock"></span> PCS</p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adjustQuantity">Adjust Quantity:</label>
+                        <input type="number" id="adjustQuantity" placeholder="+10 or -5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adjustReason">Reason:</label>
+                        <select id="adjustReason">
+                            <option value="Picked">Picked (Outbound)</option>
+                            <option value="Received">Received (Inbound)</option>
+                            <option value="Damaged">Damaged</option>
+                            <option value="Customer Return">Customer Return</option>
+                            <option value="Stock Count">Stock Count Adjustment</option>
+                            <option value="Location Move">Location Move</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button onclick="applyAdjustment()">Apply Adjustment</button>
+                    <button onclick="closeAdjustment()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="table-section">
+            <h2>📋 Current Inventory</h2>
+            <div class="table-wrapper">
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Item No. ↕</th>
+                            <th onclick="sortTable(1)">Remark ↕</th>
+                            <th onclick="sortTable(2)">ITOCHU ↕</th>
+                            <th onclick="sortTable(3)">Location ↕</th>
+                            <th onclick="sortTable(4)">New Location ↕</th>
+                            <th onclick="sortTable(5)">SKU# ↕</th>
+                            <th onclick="sortTable(6)">Description ↕</th>
+                            <th onclick="sortTable(7)">PCS in storage ↕</th>
+                            <th>L</th>
+                            <th>W</th>
+                            <th>H</th>
+                            <th>CBM</th>
+                            <th onclick="sortTable(12)">Balance (PCS) ↕</th>
+                            <th>Actual Rec.</th>
+                            <th>Purpose1</th>
+                            <th>Purpose2</th>
+                            <th>Project</th>
+                            <th>Remark by Kerry</th>
+                            <th>Remark by Itochu1</th>
+                            <th>Remark by Itochu2</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody">
+                        <!-- Products will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyMessage" class="empty-message">No products found. Add your first product above!</div>
+        </div>
+
+        <!-- Movement History -->
+        <div class="history-section">
+            <h2>📝 Recent Movements (Last 20)</h2>
+            <div class="history-wrapper">
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Item No.</th>
+                            <th>SKU#</th>
+                            <th>Description</th>
+                            <th>Location</th>
+                            <th>Change</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <tr><td colspan="7" class="empty-message">No movements recorded yet</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <h3>📊 Inventory Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">Total Items</div>
+                    <div class="summary-value" id="totalItems">0</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Total PCS in Storage</div>
+                    <div class="summary-value" id="totalPcs">0</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Total CBM</div>
+                    <div class="summary-value" id="totalCbm">0.00</div>
+                </div>
+                <div class="summary-item alert">
+                    <div class="summary-label">Low Stock Items</div>
+                    <div class="summary-value" id="lowStockCount">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
